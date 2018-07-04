@@ -242,12 +242,32 @@
 <span id="242">242</span>
 <span id="243">243</span>
 <span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
 </pre><pre class="rust ">
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">IOError</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">IOError</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">FromUtf8Error</span>;
 
 <span class="kw">use</span> <span class="ident">serde_json</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">SerdeError</span>;
+<span class="kw">use</span> <span class="ident">walkdir</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">WalkdirError</span>;
 
 <span class="kw">use</span> <span class="ident">template</span>::<span class="ident">Parameter</span>;
 
@@ -297,6 +317,12 @@
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">SerdeError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RenderError</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">e</span>: <span class="ident">SerdeError</span>) <span class="op">-&gt;</span> <span class="ident">RenderError</span> {
+        <span class="ident">RenderError</span>::<span class="ident">with</span>(<span class="ident">e</span>)
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">FromUtf8Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RenderError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">e</span>: <span class="ident">FromUtf8Error</span>) <span class="op">-&gt;</span> <span class="ident">RenderError</span> {
         <span class="ident">RenderError</span>::<span class="ident">with</span>(<span class="ident">e</span>)
     }
 }
@@ -452,6 +478,16 @@
             <span class="ident">description</span>(<span class="ident">err</span>.<span class="ident">description</span>())
             <span class="ident">display</span>(<span class="string">&quot;Template \&quot;{}\&quot;: {}&quot;</span>, <span class="ident">name</span>, <span class="ident">err</span>)
         }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">WalkdirError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">TemplateFileError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">WalkdirError</span>) <span class="op">-&gt;</span> <span class="ident">TemplateFileError</span> {
+        <span class="kw">let</span> <span class="ident">path_string</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">error</span>
+            .<span class="ident">path</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">to_string_lossy</span>().<span class="ident">to_string</span>())
+            .<span class="ident">unwrap_or_default</span>();
+        <span class="ident">TemplateFileError</span>::<span class="ident">IOError</span>(<span class="ident">IOError</span>::<span class="ident">from</span>(<span class="ident">error</span>), <span class="ident">path_string</span>)
     }
 }
 
